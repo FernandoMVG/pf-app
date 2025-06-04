@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -19,8 +19,21 @@ const queryClient = new QueryClient({
   },
 })
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"
+
 function TutorlyAppContent() {
   const [activeTab, setActiveTab] = useState("upload")
+
+  // Efecto para mantener el backend despierto
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetch(`${BACKEND_URL}/api/health`)
+        .then(res => res.json())
+        .then(data => console.log("Backend health:", data))
+        .catch(() => { })
+    }, 12 * 60 * 1000) // cada 12 minutos
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
