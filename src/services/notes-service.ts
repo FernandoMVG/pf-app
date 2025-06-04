@@ -184,3 +184,23 @@ export const getMarkdownContent = async (filename: string, getAuthHeaders: () =>
     throw error
   }
 }
+
+export const updateMarkdownContent = async (filename: string, content: string, getAuthHeaders: () => Promise<any>) => {
+  try {
+    const headers = await createAuthHeaders(getAuthHeaders) // Content-Type will be application/json by default
+    const response = await axios.put(
+      `${BACKEND_BASE_URL}/api/guias/${filename}/contenido`,
+      { contenido: content },
+      {
+        headers,
+        withCredentials: true,
+      }
+    )
+    return response.data // Or handle success as needed
+  } catch (error: any) {
+    console.error("Error al actualizar contenido markdown:", error.response ? error.response.data : error.message)
+    // Rethrow or return a structured error object
+    const errorDetails = error.response ? error.response.data : { message: error.message }
+    throw new Error(errorDetails.error || errorDetails.message || "Error al actualizar el archivo.")
+  }
+}

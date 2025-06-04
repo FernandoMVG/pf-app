@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/useAuth"
 import { BookOpen, Edit3, Eye, Save, Download, Copy, Loader2 } from "lucide-react"
-import { getMarkdownFiles, getMarkdownContent } from "../services/notes-service"
+import { getMarkdownFiles, getMarkdownContent, updateMarkdownContent } from "../services/notes-service"
 
 export function NotesSection() {
   const { toast } = useToast()
@@ -18,6 +18,7 @@ export function NotesSection() {
   const [selectedNote, setSelectedNote] = useState<string>("")
   const [isEditMode, setIsEditMode] = useState(false)
   const [editedContent, setEditedContent] = useState("")
+  const queryClient = useQueryClient() // Initialize queryClient
 
   // Fetch markdown files
   const { data: markdownFiles = [], isLoading: isLoadingFiles } = useQuery({
@@ -50,20 +51,46 @@ export function NotesSection() {
   const handleEditToggle = () => {
     if (fileContent) {
       setIsEditMode(!isEditMode)
-      if (!isEditMode) {
-        setEditedContent(fileContent)
+      // If switching from edit mode to view mode without saving, revert changes.
+      // If saving is handled by handleSave, this might not be needed or adjusted.
+      if (isEditMode) { // Was in edit mode, now switching to view
+        setEditedContent(fileContent) // Revert to original content
       }
     }
   }
 
+  const updateMutation = useMutation({
+    mutationFn: ({ filename, content }: { filename: string; content: string }) =>
+      updateMarkdownContent(filename, content, getAuthHeaders),
+    onSuccess: () => {
+      toast({
+        title: "Apuntes guardados",
+        description: "Los cambios han sido guardados exitosamente.",
+      })
+      setIsEditMode(false)
+      // Invalidate and refetch the content to show the updated data
+      queryClient.invalidateQueries({ queryKey: ["markdownContent", selectedNote] })
+      queryClient.invalidateQueries({ queryKey: ["markdownFiles"] }); // In case filenames or list changes
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al guardar",
+        description: error.message || "No se pudieron guardar los cambios.",
+        variant: "destructive",
+      })
+    },
+  })
+
   const handleSave = async () => {
-    // Here you would implement the save functionality
-    // For now, we'll just show a success message
-    toast({
-      title: "Apuntes guardados",
-      description: "Los cambios han sido guardados exitosamente.",
-    })
-    setIsEditMode(false)
+    if (!selectedNote || !editedContent) {
+      toast({
+        title: "Nada que guardar",
+        description: "No hay contenido editado para guardar.",
+        variant: "default",
+      })
+      return
+    }
+    updateMutation.mutate({ filename: selectedNote, content: editedContent })
   }
 
   const handleDownload = () => {
@@ -171,9 +198,18 @@ export function NotesSection() {
 
                     <div className="flex flex-col sm:flex-row gap-2">
                       {isEditMode && (
-                        <Button onClick={handleSave} size="sm" className="bg-green-600 hover:bg-green-700 text-xs sm:text-sm">
-                          <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                          Guardar
+                        <Button
+                          onClick={handleSave}
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 text-xs sm:text-sm"
+                          disabled={updateMutation.isPending}
+                        >
+                          {updateMutation.isPending ? (
+                            <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                          ) : (
+                            <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                          )}
+                          {updateMutation.isPending ? "Guardando..." : "Guardar"}
                         </Button>
                       )}
                       <Button
