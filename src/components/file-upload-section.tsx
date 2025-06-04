@@ -345,11 +345,11 @@ export function FileUploadSection() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex space-x-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <Button
               onClick={handleStartProcessing}
               disabled={!uploadState.audio.file || isProcessing}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
             >
               {isProcessing ? (
                 <>
@@ -368,7 +368,7 @@ export function FileUploadSection() {
               variant="outline"
               onClick={handleClearFiles}
               disabled={isProcessing}
-              className="border-slate-600 text-slate-800 hover:bg-slate-800"
+              className="border-slate-600 text-slate-800 hover:bg-slate-800 w-full sm:w-auto"
             >
               Cancelar y Limpiar
             </Button>
