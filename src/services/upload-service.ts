@@ -1,8 +1,9 @@
 import axios from "axios"
 
 // Usar rutas relativas ya que tenemos proxy configurado
-const BACKEND_PROXY_URL = ""
-
+const BACKEND_PROXY_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"
+// filepath: src/services/upload-service.ts
+console.log("BACKEND_PROXY_URL:", BACKEND_PROXY_URL)
 // Función auxiliar para crear headers de autenticación
 const createAuthHeaders = async (getAuthHeaders: () => Promise<any>, isFormData = false) => {
   const authHeaders = await getAuthHeaders()

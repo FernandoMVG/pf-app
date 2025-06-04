@@ -56,7 +56,7 @@ export const generarEsquema = async (transcriptionFile: File, getAuthHeaders: ()
     formData.append('file', transcriptionFile)
     const headers = await createAuthHeaders(getAuthHeaders, true)
 
-    const response = await axios.post(`${BACKEND_BASE_URL}/api/generar-esquema`, formData, {
+    const response = await axios.post(`${BACKEND_BASE_URL}/api/generar_esquema`, formData, {
       headers,
       withCredentials: true,
       responseType: 'blob'

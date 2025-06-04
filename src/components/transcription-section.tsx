@@ -36,47 +36,51 @@ export function TranscriptionSection() {
   })
 
   // Generate study guide mutation
-  const generateStudyGuideMutation = useMutation({
-    mutationFn: async () => {
-      if (!transcriptionData) throw new Error("No transcription available")      // Create transcription file
-      const fullText = transcriptionData.segments
-        ? transcriptionData.segments.map((segment: any) => segment.transcription).join("\\n")
-        : transcriptionData.complete_transcription
+const generateStudyGuideMutation = useMutation({
+  mutationFn: async () => {
+    if (!transcriptionData) throw new Error("No transcription available")
+    // Create transcription file
+    const fullText = transcriptionData.segments
+      ? transcriptionData.segments.map((segment: any) => segment.transcription).join("\n")
+      : transcriptionData.complete_transcription
 
-      const transcriptionBlob = new Blob([fullText], { type: "text/plain;charset=utf-8" })
-      const transcriptionFile = new File([transcriptionBlob], "transcription.txt", {
-        type: "text/plain;charset=utf-8",
-      })
+    // Usa el nombre original del audio o filename, con extensión .txt
+    const originalName = selectedAudio?.originalName || selectedAudio?.filename || "transcription"
+    const baseName = originalName.replace(/\.[^/.]+$/, "") // quita la extensión si la hay
+    const transcriptionBlob = new Blob([fullText], { type: "text/plain;charset=utf-8" })
+    const transcriptionFile = new File([transcriptionBlob], `${baseName}.txt`, {
+      type: "text/plain;charset=utf-8",
+    })
 
-      // Step 1: Generate schema
-      let schemaResponse
-      if (studyGuideMode === "gemini") {
-        schemaResponse = await generarEsquemaGemini(transcriptionFile, getAuthHeaders)
-      } else {
-        schemaResponse = await generarEsquema(transcriptionFile, getAuthHeaders)
-      }
+    // Step 1: Generate schema
+    let schemaResponse
+    if (studyGuideMode === "gemini") {
+      schemaResponse = await generarEsquemaGemini(transcriptionFile, getAuthHeaders)
+    } else {
+      schemaResponse = await generarEsquema(transcriptionFile, getAuthHeaders)
+    }
 
-      if (!schemaResponse.success || !schemaResponse.blob) {
-        throw new Error("Error al generar el esquema.")
-      }
+    if (!schemaResponse.success || !schemaResponse.blob) {
+      throw new Error("Error al generar el esquema.")
+    }
 
-      const schemaFile = new File([schemaResponse.blob], schemaResponse.filename || "esquema.txt", {
-        type: "text/plain;charset=utf-8",
-      })
+    const schemaFile = new File([schemaResponse.blob], schemaResponse.filename || "esquema.txt", {
+      type: "text/plain;charset=utf-8",
+    })
 
-      // Step 2: Generate notes
-      let notesResponse
-      if (studyGuideMode === "estandar") {
-        notesResponse = await generarApuntes(transcriptionFile, schemaFile, getAuthHeaders)
-      } else {
-        notesResponse = await generarApuntesGemini(schemaFile, transcriptionFile, getAuthHeaders)
-      }
+    // Step 2: Generate notes
+    let notesResponse
+    if (studyGuideMode === "estandar") {
+      notesResponse = await generarApuntes(transcriptionFile, schemaFile, getAuthHeaders)
+    } else {
+      notesResponse = await generarApuntesGemini(schemaFile, transcriptionFile, getAuthHeaders)
+    }
 
-      if (!notesResponse.success) {
-        throw new Error("Error al generar los apuntes.")
-      }
+    if (!notesResponse.success) {
+      throw new Error("Error al generar los apuntes.")
+    }
 
-      return notesResponse
+    return notesResponse
     },
     onSuccess: (data) => {
       toast({
