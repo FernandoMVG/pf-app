@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/useAuth"
 import { FileAudio, Copy, Download, Sparkles, Loader2 } from "lucide-react"
 import { getAudioList, getTranscription } from "../services/upload-service"
-import { generarEsquema, generarApuntes, generarApuntesGemini } from "../services/notes-service"
+import { generarEsquema, generarEsquemaGemini, generarApuntes, generarApuntesGemini } from "../services/notes-service"
 
 export function TranscriptionSection() {
   const { toast } = useToast()
@@ -40,7 +40,7 @@ export function TranscriptionSection() {
     mutationFn: async () => {
       if (!transcriptionData) throw new Error("No transcription available")      // Create transcription file
       const fullText = transcriptionData.segments
-        ? transcriptionData.segments.map((segment: any) => segment.transcription).join("\n")
+        ? transcriptionData.segments.map((segment: any) => segment.transcription).join("\\n")
         : transcriptionData.complete_transcription
 
       const transcriptionBlob = new Blob([fullText], { type: "text/plain;charset=utf-8" })
@@ -49,7 +49,13 @@ export function TranscriptionSection() {
       })
 
       // Step 1: Generate schema
-      const schemaResponse = await generarEsquema(transcriptionFile, getAuthHeaders)
+      let schemaResponse
+      if (studyGuideMode === "gemini") {
+        schemaResponse = await generarEsquemaGemini(transcriptionFile, getAuthHeaders)
+      } else {
+        schemaResponse = await generarEsquema(transcriptionFile, getAuthHeaders)
+      }
+
       if (!schemaResponse.success || !schemaResponse.blob) {
         throw new Error("Error al generar el esquema.")
       }

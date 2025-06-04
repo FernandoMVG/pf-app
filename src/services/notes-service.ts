@@ -1,7 +1,7 @@
 import axios from "axios"
 
 // Usar rutas relativas ya que tenemos proxy configurado
-const BACKEND_BASE_URL = ""
+const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_URL || ""
 
 // Función auxiliar para crear headers de autenticación
 const createAuthHeaders = async (getAuthHeaders: () => Promise<any>, isFormData = false) => {
@@ -71,6 +71,35 @@ export const generarEsquema = async (transcriptionFile: File, getAuthHeaders: ()
     }
   } catch (error: any) {
     console.error('Error generating schema:', error)
+    return {
+      success: false,
+      error: error.response ? error.response.data : error.message,
+    }
+  }
+}
+
+// Función para generar esquema con Gemini
+export const generarEsquemaGemini = async (transcriptionFile: File, getAuthHeaders: () => Promise<any>) => {
+  try {
+    const formData = new FormData()
+    formData.append('file', transcriptionFile)
+    const headers = await createAuthHeaders(getAuthHeaders, true)
+
+    const response = await axios.post(`${BACKEND_BASE_URL}/api/generar_esquema_gemini`, formData, {
+      headers,
+      withCredentials: true,
+      responseType: 'blob'
+    })
+
+    const filename = getFilenameFromResponse(response.headers, 'esquema_gemini.txt')
+
+    return {
+      success: true,
+      blob: response.data,
+      filename: filename.replace(/"/g, ''),
+    }
+  } catch (error: any) {
+    console.error('Error generating Gemini schema:', error)
     return {
       success: false,
       error: error.response ? error.response.data : error.message,
