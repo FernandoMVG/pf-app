@@ -368,7 +368,7 @@ export function FileUploadSection() {
               variant="outline"
               onClick={handleClearFiles}
               disabled={isProcessing}
-              className="border-slate-600 text-slate-300 hover:bg-slate-800"
+              className="border-slate-600 text-slate-800 hover:bg-slate-800"
             >
               Cancelar y Limpiar
             </Button>

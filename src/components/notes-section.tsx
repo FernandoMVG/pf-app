@@ -216,7 +216,7 @@ export function NotesSection() {
                         variant="outline"
                         size="sm"
                         onClick={handleCopy}
-                        className="border-slate-600 text-slate-300 hover:bg-slate-800 text-xs sm:text-sm"
+                        className="border-slate-600 text-slate-800 hover:bg-slate-800 text-xs sm:text-sm"
                       >
                         <Copy className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                         Copiar
@@ -225,7 +225,7 @@ export function NotesSection() {
                         variant="outline"
                         size="sm"
                         onClick={handleDownload}
-                        className="border-slate-600 text-slate-300 hover:bg-slate-800 text-xs sm:text-sm"
+                        className="border-slate-600 text-slate-800 hover:bg-slate-800 text-xs sm:text-sm"
                       >
                         <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                         Descargar
