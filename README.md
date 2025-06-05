@@ -214,8 +214,6 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ¿Tienes preguntas o necesitas ayuda? 
 
-- 📧 **Email**: [tu-email@ejemplo.com]
-- 💬 **Discord**: [Tu servidor de Discord]
 - 🐛 **Issues**: [GitHub Issues](link-a-issues)
 
 ---
